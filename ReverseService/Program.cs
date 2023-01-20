@@ -4,13 +4,17 @@ namespace ReverseService
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            ReverseServer server = new ReverseServer();
+            ReverseServer server = new ();
             server.Start();
+            
             Console.WriteLine("Reverse server is listening...");
-            Console.WriteLine("Press any key to stop...");
-            Console.ReadKey();
+
+            await server.ShutdownRequested;
+            Console.WriteLine(Environment.NewLine + "Shutdown requested by client.");
+
+            await server.ShutdownAsync();
         }
     }
 }

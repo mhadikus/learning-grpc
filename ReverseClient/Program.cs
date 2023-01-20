@@ -1,28 +1,35 @@
 ﻿using Grpc.Core;
+using ReverseService.Generated;
+using static ReverseService.Generated.ReverseService;
 
 namespace ReverseClient
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
+            var channel = new Channel("localhost", 10001, ChannelCredentials.Insecure);
+            var client = new ReverseService.Generated.ReverseService.ReverseServiceClient(channel);
 
             Console.Write("Enter a string to reverse: ");
             var stringToReverse = Console.ReadLine();
 
-            var reversedString = ReverseAsync(stringToReverse ?? string.Empty).GetAwaiter().GetResult();
-
+            var reversedString = await ReverseAsync(client, stringToReverse ?? string.Empty);
             Console.WriteLine(Environment.NewLine + reversedString + Environment.NewLine);
+
+            Console.WriteLine("Press S to shutdown the server or any other key to exit the client...");
+            var keyInfo = Console.ReadKey();
+            if (keyInfo.KeyChar == 'S')
+            {
+                await ShutdownServerAsync(client);
+            }
         }
 
-        static async Task<string> ReverseAsync(string stringToReverse)
+        static async Task<string> ReverseAsync(ReverseServiceClient client, string stringToReverse)
         {
             try
             {
-                var channel = new Channel("localhost", 10001, ChannelCredentials.Insecure);
-                var client = new ReverseService.Generated.ReverseService.ReverseServiceClient(channel);
-
-                var data = new ReverseService.Generated.Data() { Str = stringToReverse };
+                var data = new Data() { Str = stringToReverse };
                 var retVal = await client.ReverseAsync(data);
                 return retVal.Str;
             }
@@ -31,6 +38,18 @@ namespace ReverseClient
                 Console.WriteLine(ex);
             }
             return string.Empty;
+        }
+
+        static async Task ShutdownServerAsync(ReverseServiceClient client)
+        {
+            try
+            {
+                await client.ShutdownAsync(new ShutdownRequest());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

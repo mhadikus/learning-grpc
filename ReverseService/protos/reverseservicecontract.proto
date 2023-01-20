@@ -6,10 +6,19 @@ package proto;
 
 service ReverseService
 {
-    rpc Reverse(Data) returns (Data){}
+    rpc Reverse(Data) returns (Data) {}
+    rpc Shutdown(ShutdownRequest) returns (ShutdownResponse) {}
 }
 
 message Data
 {
-    string str =  1;
+    string str = 1;
+}
+
+message ShutdownRequest
+{
+}
+
+message ShutdownResponse
+{
 }

@@ -4,25 +4,34 @@ namespace ReverseService
 {
     public class ReverseServer
     {
-        private readonly Server _server;
+        private Server? _server;
+        private readonly TaskCompletionSource<bool> shutdownRequested = new ();
 
-        public ReverseServer()
-        {
-            _server = new Server()
-            {
-                Services = { Generated.ReverseService.BindService(new ReverseServiceImplementation()) },
-                Ports = { new ServerPort("localhost", 10001, ServerCredentials.Insecure) }
-            };
-        }
+        public Task ShutdownRequested => shutdownRequested.Task;
 
         public void Start()
         {
+            _server = new Server()
+            {
+                Services = { Generated.ReverseService.BindService(new ReverseServiceImplementation(this)) },
+                Ports = { new ServerPort("localhost", 10001, ServerCredentials.Insecure) }
+            };
+
             _server.Start();
         }
 
-        public async Task ShutDownAsync()
+        public async Task ShutdownAsync()
         {
-            await _server.ShutdownAsync();
+            if (_server != null)
+            {
+                await _server.ShutdownAsync();
+            }
+            _server = null;
+        }
+
+        internal void SetShutdownRequested()
+        {
+            shutdownRequested.TrySetResult(true);
         }
     }
 }
