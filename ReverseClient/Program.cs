@@ -9,7 +9,7 @@ namespace ReverseClient
         public static async Task Main(string[] args)
         {
             var channel = new Channel("localhost", 10001, ChannelCredentials.Insecure);
-            var client = new ReverseService.Generated.ReverseService.ReverseServiceClient(channel);
+            var client = new ReverseServiceClient(channel);
 
             Console.Write("Enter a string to reverse: ");
             var stringToReverse = Console.ReadLine();
